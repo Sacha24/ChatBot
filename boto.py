@@ -3,15 +3,23 @@ This is the template server side for ChatBot
 """
 from bottle import route, run, template, static_file, request
 from random import randint
+import webbrowser
 import json
 
 counter = 0
-list_sw = ["fuck", "fucking", "bitch", "son of bitch", "asshole", "dick", "pussy", "bastard",
-           "cunt", "shit", "holy shit", "motherfucker", "nigga", "nigger"]
-jokes_list = [" Anton, do you think I’m a bad mother? My name is Paul...",
+
+list_sw = ["fuck", "fucking", "bitch", "son of bitch", "asshole", "dick", "pussy",
+           "bastard", "cunt", "shit", "holy shit", "motherfucker", "nigga", "nigger"]
+
+jokes_list = ["What is the difference between a snowman and a snowwoman? - Snowballs.",
+              "Doctor says to his patient: 'You have cancer and Alzheimer.' - Patient: 'At least I don't have cancer.'",
               "Mother: 'How was school today, Patrick?' Patrick: 'It was really great mum! Today we made explosives!' Mother: 'Ooh, they do very fancy stuff with you these days. And what will you do at school tomorrow?' Patrick: 'What school?'",
               "'My wife suffers from a drinking problem.' - 'Oh is she an alcoholic?' - 'No, I am, but she’s the one who suffers.'",
               "Son: 'Dad what do you think about abortion ?' Dad: 'Ask your sister' Son: 'But I don't have ...' Dad: 'Exactly'"]
+
+keys_words = ["weather", "cinema", "news", "facebook", "youtube"]
+
+getting_info = ["info on", "information on", "about", "details on"]
 
 
 @route('/', method='GET')
@@ -21,7 +29,7 @@ def index():
 
 def hello(name):
     get_name = name.split()
-    get_name = get_name[-1]
+    get_name = get_name[-1].capitalize()
     return "exciting", "Hi {0} ! What can I do for you ?".format(get_name)
 
 
@@ -34,8 +42,27 @@ def swear_words():
 
 
 def tell_joke():
-    r = randint(0, 3)
-    return "laughing", "Ok i'm sure you're gonna like this one ! {0}".format(jokes_list[r])
+    r = randint(0, 4)
+    return "laughing", "Ok I'm sure you're gonna like this one ! {0}".format(jokes_list[r])
+
+
+def get_services(user_demand):
+    user_demand = user_demand.split()
+    url = "https://www.google.com/search?q="
+    for i in keys_words:
+        if i in user_demand:
+            webbrowser.open_new_tab(url + i)
+            return "ok", "You asked for {0}, right ?".format(i)
+    return "bored", "Sorry I can't help you with that ..."
+
+
+def get_infos(user_demand):
+    for info in getting_info:
+        if info in user_demand:
+            key_word = user_demand.split(info, 1)[1]
+            url = "https://en.wikipedia.org/wiki/{0}".format(key_word)
+            webbrowser.open_new_tab(url)
+            return "giggling", "You asked for infomation about {0}, right ?".format(key_word)
 
 
 def handle_answers(user_input):
@@ -50,8 +77,10 @@ def handle_answers(user_input):
         return question()
     elif "joke" in user_message:
         return tell_joke()
+    elif any(info in user_message for info in getting_info):
+        return get_infos(user_input)
     else:
-        return "Sorry I can't help you with that ..."
+        return get_services(user_input)
 
 
 @route("/chat", method='POST')
