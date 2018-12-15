@@ -53,7 +53,7 @@ def swear_words():
 
 
 def tell_joke():
-    r = randint(0, 4)
+    r = randint(0, len(jokes_list)-1)
     return "laughing", "Ok I'm sure you're gonna like this one ! {0}".format(jokes_list[r])
 
 
