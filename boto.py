@@ -3,10 +3,17 @@ This is the template server side for ChatBot
 """
 from bottle import route, run, template, static_file, request
 from random import randint
+import math
 import webbrowser
+import requests
 import json
 
 counter = 0
+API_weather = "http://api.openweathermap.org/data/2.5/weather?appid=0e813999bfa8d3302e159b20ebdf1b4c&q="
+
+cities_list = ["Berlin", "Barcelona", "Vienne", "Bruxelles", "Sophia", "Zagreb", "Madrid", "Tallinn",
+               "Helsinki", "Paris", "Athena", "Budapest", "Dublin", "Rome", "Riga", "Luxembourg", "La Valette",
+               "Amsterdam", "Varsovie", "Lisbonne", "Prague", "Bucarest", "London", "Bratislava", "Stockholm"]
 
 list_sw = ["fuck", "fucking", "bitch", "son of bitch", "asshole", "dick", "pussy",
            "bastard", "cunt", "shit", "holy shit", "motherfucker", "nigga", "nigger"]
@@ -17,7 +24,12 @@ jokes_list = ["What is the difference between a snowman and a snowwoman? - Snowb
               "'My wife suffers from a drinking problem.' - 'Oh is she an alcoholic?' - 'No, I am, but she’s the one who suffers.'",
               "Son: 'Dad what do you think about abortion ?' Dad: 'Ask your sister' Son: 'But I don't have ...' Dad: 'Exactly'"]
 
-keys_words = ["weather", "cinema", "news", "facebook", "youtube"]
+services = {
+    "news": "https://news.google.com",
+    "facebook": "https://www.facebook.com",
+    "youtube": "https://www.youtube.com",
+    "cinema": "https://www.imdb.com/movies-in-theaters"
+}
 
 getting_info = ["info on", "information on", "about", "details on"]
 
@@ -30,11 +42,10 @@ def index():
 def hello(name):
     get_name = name.split()
     get_name = get_name[-1].capitalize()
-    return "exciting", "Hi {0} ! What can I do for you ?".format(get_name)
-
-
-def question():
-    return "confused", "That's an interesting question ! Maybe you should search it on google"
+    if get_name == "Sacha":
+        return "inlove", "Hello Master ! Good to see you back ! How can I help you ?"
+    else:
+        return "afraid", "Hi {0} ! Where is my Master Sacha ?".format(get_name)
 
 
 def swear_words():
@@ -46,14 +57,37 @@ def tell_joke():
     return "laughing", "Ok I'm sure you're gonna like this one ! {0}".format(jokes_list[r])
 
 
+def question(user_question):
+    if "your name" in user_question:
+        return "dancing", "My name is Boto ! I just told it to you dummy ..."
+    elif user_question.startswith("Do you know"):
+        return "giggling", "Of course, I know everyone and everything in this universe !"
+    elif "you live" in user_question:
+        return "dog", "Sorry this is totally confidential"
+    elif "How are you" in user_question:
+        return "money", "I'm ok, thanks for asking"
+    else:
+        return "confused", "That's an interesting question !"
+
+
 def get_services(user_demand):
     user_demand = user_demand.split()
-    url = "https://www.google.com/search?q="
-    for i in keys_words:
-        if i in user_demand:
-            webbrowser.open_new_tab(url + i)
-            return "ok", "You asked for {0}, right ?".format(i)
+    for s in services:
+        if s in user_demand:
+            webbrowser.open_new_tab(services[s])
+            return "ok", "You asked for {0}, right ?".format(s)
     return "bored", "Sorry I can't help you with that ..."
+
+
+def get_weather(user_city):
+    for city in cities_list:
+        if city in user_city:
+            json_data = requests.get(API_weather + city).json()
+            weather_description = json_data["weather"][0]["main"]
+            temperature = int(json_data["main"]["temp"]) - 273.15
+            humidity = int(json_data["main"]["humidity"])
+            return "waiting", "Weather: " + weather_description + " / Temp: " + str(
+                math.floor(temperature)) + "°C / Humidity: " + str(humidity) + "%"
 
 
 def get_infos(user_demand):
@@ -73,12 +107,14 @@ def handle_answers(user_input):
         return hello(user_input)
     elif any(swear_word in user_message for swear_word in list_sw):
         return swear_words()
-    elif user_message.endswith("?"):
-        return question()
-    elif "joke" in user_message:
-        return tell_joke()
+    elif any(city in user_message for city in cities_list):
+        return get_weather(user_input)
     elif any(info in user_message for info in getting_info):
         return get_infos(user_input)
+    elif user_message.endswith("?"):
+        return question(user_input)
+    elif "joke" in user_message:
+        return tell_joke()
     else:
         return get_services(user_input)
 
