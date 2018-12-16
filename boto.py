@@ -11,8 +11,8 @@ import json
 counter = 0
 API_weather = "http://api.openweathermap.org/data/2.5/weather?appid=0e813999bfa8d3302e159b20ebdf1b4c&q="
 
-cities_list = ["Berlin", "Barcelona", "Vienne", "Bruxelles", "Sophia", "Zagreb", "Madrid", "Tallinn",
-               "Helsinki", "Paris", "Athena", "Budapest", "Dublin", "Rome", "Riga", "Luxembourg", "La Valette",
+cities_list = ["Berlin", "Barcelona", "Vienne", "Bruxelles", "Sophia", "Zagreb", "Madrid", "Tallinn", "Jerusalem",
+               "Helsinki", "Paris", "Athena", "Budapest", "Dublin", "Rome", "Riga", "Luxembourg", "La Valette", "Yafo",
                "Amsterdam", "Varsovie", "Lisbonne", "Prague", "Bucarest", "London", "Bratislava", "Stockholm"]
 
 list_sw = ["fuck", "fucking", "bitch", "son of bitch", "asshole", "dick", "pussy",
